@@ -28,7 +28,7 @@ var config = new Schema({
     },
 });
 
-mongoose.models = {};
-var Config = mongoose.model('raspi_config', config);
+var Config = mongoose.models.raspi_config || mongoose.model('raspi_config', config);
+
 
 export default Config;

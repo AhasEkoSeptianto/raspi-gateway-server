@@ -46,7 +46,7 @@ export default function Home() {
     setLoadingFormConfig(true)
     await axios.put('/api/raspi_config', formUpdateConfig, { params: { uniq_id: formUpdateConfig._id }})
       .then(res => {
-        console.log('success')
+        toast.success('success')
       }).catch(err => {
         // toast.warning('error')
       })
@@ -93,6 +93,7 @@ export default function Home() {
         okButtonProps={{
           style: { backgroundColor: 'blue' }
         }}
+        confirmLoading={loadingFormConfig}
         onOk={SubmitUpdateConfig}
         okText="Update"
         title='Raspi Config'

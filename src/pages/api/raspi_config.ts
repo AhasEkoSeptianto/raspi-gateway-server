@@ -4,7 +4,7 @@ import { IsIncludes } from './../../helper/isIncludes'
 
 export default async function handler(req:any, res:any) {
     const { method } = req
-    const { raspi_id, mobileAppsCon, raspi_wifi_ssid, raspi_wifi_password, esp32cam_wifi_ssid, esp32cam_wifi_password, created_at } = req.body
+    const { raspi_id, mobileAppsCon, raspi_wifi_ssid, raspi_wifi_password, esp32cam_wifi_ssid, esp32cam_wifi_password, created_at, messanggingID } = req.body
     const { uniq_id } = req.query
     
     await dbConnect()
@@ -14,11 +14,27 @@ export default async function handler(req:any, res:any) {
         case 'GET':
             try {
                 let raspi_id = req.query.raspi_id || ''
+                let messagingID = req?.query?.messagingID || ''
 
                 let queryExe = { raspi_id: IsIncludes(raspi_id)}
                 
                 let data_config = await Config.find(queryExe).sort({ createdAt: -1 })
-                res?.status(200).json({ msg: 'berhasil mengambil data', data: data_config })
+                
+                if (data_config?.length > 0){
+                    let multipleMessagingID = data_config?.[0]?.messanggingID?.split(',')
+                    let DeviceInUse = multipleMessagingID?.indexOf(messagingID) > -1
+                    if (!DeviceInUse){
+                        messagingID = multipleMessagingID?.join(',') + `,${messagingID}`
+                    }else{
+                        messagingID = multipleMessagingID?.join(',')
+                    }
+    
+                    await Config.findOneAndUpdate({ raspi_id: IsIncludes(raspi_id) }, { messanggingID: messagingID }, { new: true })
+                    res?.status(200).json({ msg: 'berhasil mengambil data', data: data_config })
+                }else{
+                    res.status(200).json({ msg: 'data tidak ditemukan' })
+                }
+                
 
             }catch(err){
                 res.status(500).send({ msg: 'error', err: err })
@@ -34,6 +50,7 @@ export default async function handler(req:any, res:any) {
                     raspi_wifi_password: raspi_wifi_password,
                     esp32cam_wifi_ssid: esp32cam_wifi_ssid,
                     esp32cam_wifi_password: esp32cam_wifi_password,
+                    messanggingID: messanggingID,
                     created_at: created_at
                 })
             
@@ -57,6 +74,7 @@ export default async function handler(req:any, res:any) {
                     raspi_wifi_password: raspi_wifi_password,
                     esp32cam_wifi_ssid: esp32cam_wifi_ssid,
                     esp32cam_wifi_password: esp32cam_wifi_password,
+                    messanggingID: messanggingID,
                     created_at: created_at
                 },{new: true, useFindAndModify: false})
             

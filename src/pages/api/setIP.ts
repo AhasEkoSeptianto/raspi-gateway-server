@@ -5,8 +5,7 @@ import { IsIncludes } from "./../../helper/isIncludes";
 export default async function handler(req: any, res: any) {
   const { method } = req;
   const { raspi_id, IP_AddresV4Raspi, IP_ESP32CAM } = req.body;
-  const { uniq_id, type, IP } = req.query;
-
+  const { uniq_id, type, IP, raspi_id_params } = req.query;
   await dbConnect();
 
   switch (method) {
@@ -24,12 +23,12 @@ export default async function handler(req: any, res: any) {
           res.status(200).send({ msg: "berhasil mengubah data" });
         } else {
           await Config.findOneAndUpdate(
-            { raspi_id: raspi_id },
+            { raspi_id: raspi_id_params },
             {
               IP_ESP32CAM: IP,
             },
-            { new: true, useFindAndModify: false }
-          );
+            { new: true, upsert: false, remove: {}, fields: {} }
+          ).exec();
 
           res.status(200).send({ msg: "berhasil mengubah data" });
         }
